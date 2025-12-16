@@ -1,0 +1,26 @@
+# Ignore other build artifacts in target
+target/**
+# Allow the packaged jar to be copied into the image
+!target/*.jar
+
+# IDE files
+/.idea
+/.vscode
+*.iml
+
+# Git
+/.git
+/.gitignore
+
+# OS/editor files
+*.log
+**/.DS_Store
+**/Thumbs.db
+
+# Maven wrapper caches
+/.mvn
+/mvnw
+/mvnw.cmd
+
+# Node related (por si hay front en el mismo repo)
+node_modules
