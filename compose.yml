@@ -1,0 +1,113 @@
+
+services:
+
+  # ======================
+  # API GATEWAY
+  # ======================
+  gateway:
+    image: imperium-rooms-gateway:1.0
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - DOMAIN_SERVICE_URL=http://domain-service:8080
+      - AUTH_SERVICE_URL=http://auth-service:8080
+      - PRODUCT_SERVICE_URL=http://product-service:8080
+    depends_on:
+      - domain-service
+      - auth-service
+      - product-service
+    networks:
+      - app-network
+
+  # ======================
+  # PRODUCT SERVICE
+  # ======================
+  product-service:
+    image: product_service:1.0
+    container_name: product-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://product-db:5432/productService
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - product-db
+    networks:
+      - app-network
+
+  product-db:
+    image: postgres:17
+    container_name: product-db
+    environment:
+      - POSTGRES_DB=productService
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - product-db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # ======================
+  # DOMAIN SERVICE
+  # ======================
+  domain-service:
+    image: imperiumrooms:1.1
+    container_name: domain-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://domain-db:5432/imperiumRooms
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - domain-db
+    networks:
+      - app-network
+
+  domain-db:
+    image: postgres:17
+    container_name: domain-db
+    environment:
+      - POSTGRES_DB=imperiumRooms
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - domain-db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # ======================
+  # AUTH SERVICE
+  # ======================
+  auth-service:
+    image: auth-service:1.0
+    container_name: auth-service
+    depends_on:
+      - auth-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-db:5432/auth
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+    networks:
+      - app-network
+
+  auth-db:
+    image: postgres:17
+    container_name: auth-db
+    environment:
+      - POSTGRES_DB=auth
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    # si tiene DB, se agrega aquí igual que los otros
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  product-db-data:
+  domain-db-data:
+  auth-db-data:
