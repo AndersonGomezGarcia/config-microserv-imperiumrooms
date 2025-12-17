@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  gateway:
+    image: imperium-rooms-gateway:1.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - DOMAIN_SERVICE_URL=http://domain-service:8080
+      - AUTH_SERVICE_URL=http://auth-service:8080
+      - PRODUCT_SERVICE_URL=http://product-service:8080
+      - JAVA_OPTS=
+    ports:
+      - "8080:8080"
+    depends_on:
+      - domain-service
+      - auth-service
+      - product-service
+    networks:
+      - gateway-net
+    restart: unless-stopped
+
+  domain-service:
+    image: hashicorp/http-echo:0.2.3
+    command: ["-text","domain-service","-listen=:8080"]
+    networks:
+      - gateway-net
+    restart: unless-stopped
+
+  auth-service:
+    image: hashicorp/http-echo:0.2.3
+    command: ["-text","auth-service","-listen=:8080"]
+    networks:
+      - gateway-net
+    restart: unless-stopped
+
+  product-service:
+    image: hashicorp/http-echo:0.2.3
+    command: ["-text","product-service","-listen=:8080"]
+    networks:
+      - gateway-net
+    restart: unless-stopped
+
+networks:
+  gateway-net:
+    driver: bridge

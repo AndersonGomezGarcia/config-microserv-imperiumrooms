@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: imperium-rooms-gateway:1.0
+    container_name: gateway
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - DOMAIN_SERVICE_URL=http://domain-service:8080
+      - AUTH_SERVICE_URL=http://auth-service:8080
+      - PRODUCT_SERVICE_URL=http://product-service:8080
+      - JAVA_OPTS=
+    ports:
+      - "8080:8080" # Solo el gateway publica 8080 hacia fuera
+    depends_on:
+      - domain-service
+      - auth-service
+      - product-service
+    networks:
+      - gateway-net
+    restart: unless-stopped
+
+  # Servicios placeholder. Reemplaza `image:` por `build:` o por la imagen real de cada microservicio.
+  domain-service:
+    image: imperium-domain-service:1.0
+    networks:
+      - gateway-net
+    restart: unless-stopped
+
+  auth-service:
+    image: imperium-auth-service:1.0
+    networks:
+      - gateway-net
+    restart: unless-stopped
+
+  product-service:
+    image: imperium-product-service:1.0
+    networks:
+      - gateway-net
+    restart: unless-stopped
+
+networks:
+  gateway-net:
+    driver: bridge
